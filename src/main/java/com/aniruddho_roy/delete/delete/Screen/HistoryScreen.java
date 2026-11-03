@@ -165,21 +165,18 @@ public class HistoryScreen extends DashboardBase {
     // Build one row from a prediction JSON object
     // =========================================================
 
-    private HBox createPredictionRow(JsonNode item) {
+    static HBox createPredictionRow(JsonNode item) {
 
-        JsonNode repo = item.path("repository");
-        JsonNode pr = item.path("pullRequest");
+        JsonNode features = item.path("features");
+        String repository = features.path("repository").asText("");
+        if (repository.isBlank()) repository = item.path("pr_url").asText("Pull request");
 
-        String repository = repo.path("owner").asText("?")
-                + "/" + repo.path("name").asText("?");
-
-        String prText = "#" + pr.path("number").asText("?");
-        String title = pr.path("title").asText("");
-        if (!title.isBlank()) {
-            prText += "  " + title;
+        String number = features.hasNonNull("number") ? "#" + features.path("number").asText() : "";
+        String prText = (number + "  " + features.path("title").asText("")).trim();
+        if ("FAILED".equals(item.path("status").asText())) {
+            prText = "FAILED: " + item.path("errorMessage").asText("Analysis failed.");
         }
 
-        // mergeProbability is null for PR_QUALITY requests -> fall back to qualityScore
         Double score = null;
         if (item.hasNonNull("mergeProbability")) {
             score = item.get("mergeProbability").asDouble();
@@ -193,7 +190,7 @@ public class HistoryScreen extends DashboardBase {
         return createPredictionRow(repository, prText, score, quality, date);
     }
 
-    private HBox createPredictionRow(
+    private static HBox createPredictionRow(
             String repository,
             String pullRequest,
             Double score,
@@ -203,11 +200,14 @@ public class HistoryScreen extends DashboardBase {
         Label repositoryLabel = new Label(repository);
         repositoryLabel.setFont(Font.font("Arial", FontWeight.BOLD, 13));
         repositoryLabel.getStyleClass().add("heading");
+        repositoryLabel.setWrapText(true);
+        repositoryLabel.setMaxWidth(420);
 
         Label pullRequestLabel = new Label(pullRequest);
         pullRequestLabel.setFont(Font.font("Arial", 11));
         pullRequestLabel.getStyleClass().add("muted-text");
         pullRequestLabel.setMaxWidth(420);
+        pullRequestLabel.setWrapText(true);
 
         VBox details = new VBox(3, repositoryLabel, pullRequestLabel);
 
@@ -252,7 +252,7 @@ public class HistoryScreen extends DashboardBase {
     // API timestamps are UTC ISO strings without a "Z" suffix
     // =========================================================
 
-    private String formatDate(String iso) {
+    private static String formatDate(String iso) {
 
         if (iso == null || iso.isBlank()) {
             return "-";

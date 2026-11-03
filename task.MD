@@ -37,10 +37,10 @@ File: Screen/PredictionResultScreen.java.
 
 Files: Screen/HistoryScreen.java and additional/COMPONETS.java.
 
-- [ ] Replace reads of the old repository/pullRequest objects with features.repository, features.number and features.title.
-- [ ] Handle FAILED records with empty features/analysis and null scores. Use pr_url as a fallback and show the failure status/errorMessage.
-- [ ] Avoid parsing "-" as a number in the recent-prediction card.
-- [ ] Keep the existing top-level mergeProbability, qualityScore and qualityLabel reads for history; these fields are still returned.
+- [x] Replace reads of the old repository/pullRequest objects with features.repository, features.number and features.title.
+- [x] Handle FAILED records with empty features/analysis and null scores. Use pr_url as a fallback and show the failure status/errorMessage.
+- [x] Avoid parsing "-" as a number in the recent-prediction card.
+- [x] Keep the existing top-level mergeProbability, qualityScore and qualityLabel reads for history; these fields are still returned.
 
 ## 4. GET /plans, /active-plan and /subscription — credits and duration
 

@@ -1,6 +1,7 @@
 package com.aniruddho_roy.delete.delete.Screen;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.aniruddho_roy.delete.delete.additional.COMPONETS;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -61,6 +62,37 @@ class ApiScreenTest {
             for (String absent : List.of("PR Quality", "Change Statistics", "Model", "Prediction Type",
                     "Analysis", "Recommendations", "Unknown", "Lines added: 0")) {
                 assertFalse(texts.contains(absent), absent);
+            }
+        });
+    }
+
+    @Test
+    void historyAndRecentCardsUseFeaturesAndKeepHistoryScores() throws Exception {
+        onFxThread(() -> {
+            var item = new ObjectMapper().readTree("""
+                    {"status":"COMPLETED","features":{"repository":"owner/repo","number":12,
+                     "title":"Fix login"},"mergeProbability":95,"qualityScore":92,
+                     "qualityLabel":"excellent","createdAt":"2026-11-01T12:00:00"}
+                    """);
+            List<String> row = texts(HistoryScreen.createPredictionRow(item));
+            List<String> recent = texts(new COMPONETS().createPredictionItem(item));
+            assertTrue(row.containsAll(List.of("owner/repo", "#12  Fix login", "95%", "excellent")));
+            assertTrue(recent.containsAll(List.of("owner/repo", "#12  Fix login", "95%")));
+        });
+    }
+
+    @Test
+    void failedPredictionsShowUrlAndErrorWithoutParsingMissingScores() throws Exception {
+        onFxThread(() -> {
+            var item = new ObjectMapper().readTree("""
+                    {"status":"FAILED","features":{},"analysis":{},
+                     "pr_url":"https://github.com/owner/repo/pull/12",
+                     "errorMessage":"Service unavailable","mergeProbability":null,"qualityScore":null}
+                    """);
+            for (Node card : List.of(HistoryScreen.createPredictionRow(item),
+                    new COMPONETS().createPredictionItem(item))) {
+                assertTrue(texts(card).containsAll(List.of("https://github.com/owner/repo/pull/12",
+                        "FAILED: Service unavailable", "-")));
             }
         });
     }

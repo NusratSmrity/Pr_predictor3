@@ -626,26 +626,7 @@ public class COMPONETS {
             }
 
             for (JsonNode item : items) {
-                JsonNode repo = item.path("repository");
-                JsonNode pr = item.path("pullRequest");
-
-                String repository = repo.path("owner").asText("?")
-                        + "/" + repo.path("name").asText("?");
-                String prNumber = "#" + pr.path("number").asText("?");
-
-                // mergeProbability is null for PR_QUALITY requests
-                String probability = "-";
-                if (item.hasNonNull("mergeProbability")) {
-                    probability = String.format(Locale.US, "%.0f%%",
-                            item.get("mergeProbability").asDouble());
-                } else if (item.hasNonNull("qualityScore")) {
-                    probability = String.format(Locale.US, "%.0f%%",
-                            item.get("qualityScore").asDouble());
-                }
-
-                predictionList.getChildren().add(
-                        createPredictionItem(repository, prNumber, probability)
-                );
+                predictionList.getChildren().add(createPredictionItem(item));
             }
         });
 
@@ -663,11 +644,22 @@ public class COMPONETS {
         thread.setDaemon(true);
         thread.start();
     }
-    public HBox createPredictionItem(
-            String repository,
-            String pullRequest,
-            String probability
-    ) {
+    public HBox createPredictionItem(JsonNode prediction) {
+        JsonNode features = prediction.path("features");
+        String repository = features.path("repository").asText("");
+        if (repository.isBlank()) repository = prediction.path("pr_url").asText("Pull request");
+        String number = features.hasNonNull("number") ? "#" + features.path("number").asText() : "";
+        String pullRequest = (number + "  " + features.path("title").asText("")).trim();
+        if ("FAILED".equals(prediction.path("status").asText())) {
+            pullRequest = "FAILED: " + prediction.path("errorMessage").asText("Analysis failed.");
+        }
+        Double score = null;
+        if (prediction.hasNonNull("mergeProbability")) {
+            score = prediction.path("mergeProbability").asDouble();
+        } else if (prediction.hasNonNull("qualityScore")) {
+            score = prediction.path("qualityScore").asDouble();
+        }
+
         Label repositoryLabel = new Label(repository);
         repositoryLabel.setFont(
                 Font.font("Arial", FontWeight.BOLD, 12)
@@ -679,6 +671,8 @@ public class COMPONETS {
         Label pullRequestLabel = new Label(pullRequest);
         pullRequestLabel.setFont(Font.font("Arial", 11));
         pullRequestLabel.getStyleClass().add("muted-text");
+        pullRequestLabel.setWrapText(true);
+        pullRequestLabel.setMaxWidth(170);
 
         VBox details = new VBox(
                 3,
@@ -689,18 +683,16 @@ public class COMPONETS {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label percentage = new Label(probability);
+        Label percentage = new Label(score == null ? "-" : String.format(Locale.US, "%.0f%%", score));
         percentage.setFont(
                 Font.font("Arial", FontWeight.BOLD, 13)
         );
 
-        int numericProbability = Integer.parseInt(
-                probability.replace("%", "")
-        );
-
-        if (numericProbability >= 70) {
+        if (score == null) {
+            percentage.getStyleClass().add("muted-text");
+        } else if (score >= 70) {
             percentage.getStyleClass().add("probability-high");
-        } else if (numericProbability >= 50) {
+        } else if (score >= 50) {
             percentage.getStyleClass().add("probability-medium");
         } else {
             percentage.getStyleClass().add("probability-low");

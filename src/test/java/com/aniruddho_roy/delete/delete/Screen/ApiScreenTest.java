@@ -1,0 +1,88 @@
+package com.aniruddho_roy.delete.delete.Screen;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.control.Labeled;
+import javafx.scene.control.ScrollPane;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class ApiScreenTest {
+    @BeforeAll
+    static void startJavaFx() throws Exception {
+        CountDownLatch ready = new CountDownLatch(1);
+        Platform.startup(ready::countDown);
+        assertTrue(ready.await(10, TimeUnit.SECONDS));
+    }
+
+    @AfterAll
+    static void stopJavaFx() {
+        Platform.exit();
+    }
+
+    @Test
+    void resultDisplaysNestedScoresAndFeatures() throws Exception {
+        onFxThread(() -> {
+            var result = new ObjectMapper().readTree("""
+                    {"pr_url":"https://github.com/owner/repo/pull/12",
+                     "features":{"repository":"owner/repo","number":12,"title":"Fix login",
+                                 "additions":40,"deletions":0,"changed_files":5,"commit_count":2},
+                     "analysis":{"merge_probability":95,"quality_score":92,"quality":"excellent",
+                                 "summary":"Fixes login.","merge_reasoning":"Small tested fix.",
+                                 "recommendations":{"excellent":["Tests included"],"bad":[]}}}
+                    """);
+            List<String> texts = texts(PredictionResultScreen.createResultCenter(null, result));
+            assertTrue(texts.containsAll(List.of("owner/repo", "#12  Fix login", "95.0%", "92.0%",
+                    "excellent", "Lines added: 40", "Lines deleted: 0", "Files changed: 5",
+                    "Commits: 2", "Summary: Fixes login.", "Merge reasoning: Small tested fix.",
+                    "- Tests included", "https://github.com/owner/repo/pull/12")));
+        });
+    }
+
+    @Test
+    void missingFieldsStayHiddenButZeroScoresRemainVisible() throws Exception {
+        onFxThread(() -> {
+            var result = new ObjectMapper().readTree("""
+                    {"features":{},"analysis":{"merge_probability":0,"quality_score":null}}
+                    """);
+            List<String> texts = texts(PredictionResultScreen.createResultCenter(null, result));
+            assertTrue(texts.contains("0.0%"));
+            for (String absent : List.of("PR Quality", "Change Statistics", "Model", "Prediction Type",
+                    "Analysis", "Recommendations", "Unknown", "Lines added: 0")) {
+                assertFalse(texts.contains(absent), absent);
+            }
+        });
+    }
+
+    private static List<String> texts(Node node) {
+        List<String> result = new ArrayList<>();
+        if (node instanceof Labeled labeled) result.add(labeled.getText());
+        if (node instanceof ScrollPane scroll) {
+            result.addAll(texts(scroll.getContent()));
+        } else if (node instanceof Parent parent) {
+            for (Node child : parent.getChildrenUnmodifiable()) result.addAll(texts(child));
+        }
+        return result;
+    }
+
+    private static void onFxThread(CheckedAction action) throws Exception {
+        FutureTask<Void> task = new FutureTask<>(() -> { action.run(); return null; });
+        Platform.runLater(task);
+        task.get(10, TimeUnit.SECONDS);
+    }
+
+    private interface CheckedAction {
+        void run() throws Exception;
+    }
+}

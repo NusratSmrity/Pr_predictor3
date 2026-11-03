@@ -9,10 +9,10 @@ Only the necessary changes are listed below. Keep the code small and simple: upd
 
 Files: Backend/Predictions.java and Screen/NewPredictionScreen.java.
 
-- [ ] Send only pullRequestUrl and required modelId (the UUID returned by GET /models).
-- [ ] Remove predictionType from the request and method arguments. The backend rejects it with HTTP 422.
-- [ ] Remove the unnecessary prediction-type selector.
-- [ ] Validate HTTPS GitHub pull-request URLs.
+- [x] Send only pullRequestUrl and required modelId (the UUID returned by GET /models).
+- [x] Remove predictionType from the request and method arguments. The backend rejects it with HTTP 422.
+- [x] Remove the unnecessary prediction-type selector.
+- [x] Validate HTTPS GitHub pull-request URLs.
 
 Request:
 
@@ -27,11 +27,11 @@ Request:
 
 File: Screen/PredictionResultScreen.java.
 
-- [ ] Read scores from analysis.merge_probability, analysis.quality_score and analysis.quality.
-- [ ] Read PR information from features.repository, features.number, features.title and the top-level pr_url.
-- [ ] Replace old statistics with features.additions, features.deletions, features.changed_files and features.commit_count.
-- [ ] Replace the old factors/recommendation display with analysis.summary, analysis.merge_reasoning and analysis.recommendations.
-- [ ] Hide unsupported statistics and metadata instead of showing misleading zeros or unknown values. The immediate response does not add predictionId, model metadata, predictionType, status or creditsCost.
+- [x] Read scores from analysis.merge_probability, analysis.quality_score and analysis.quality.
+- [x] Read PR information from features.repository, features.number, features.title and the top-level pr_url.
+- [x] Replace old statistics with features.additions, features.deletions, features.changed_files and features.commit_count.
+- [x] Replace the old factors/recommendation display with analysis.summary, analysis.merge_reasoning and analysis.recommendations.
+- [x] Hide unsupported statistics and metadata instead of showing misleading zeros or unknown values. The immediate response does not add predictionId, model metadata, predictionType, status or creditsCost.
 
 ## 3. GET /history — history and recent predictions
 

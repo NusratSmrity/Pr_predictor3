@@ -5,7 +5,6 @@ import com.aniruddho_roy.delete.delete.additional.NAVIGATOR;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -14,14 +13,11 @@ import javafx.scene.layout.VBox;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class NewPredictionScreen
         extends DashboardBase {
 
-
     private final Predictions predictions =
             new Predictions();
-
 
     // =========================================================
     // Constructor
@@ -37,7 +33,6 @@ public class NewPredictionScreen
         );
     }
 
-
     public NewPredictionScreen(
             NAVIGATOR navigator,
             boolean subscribed
@@ -48,19 +43,16 @@ public class NewPredictionScreen
                 subscribed
         );
 
-
         setCenter(
                 createPredictionCenter()
         );
     }
-
 
     // =========================================================
     // Main UI
     // =========================================================
 
     private ScrollPane createPredictionCenter() {
-
 
         // =====================================================
         // Heading
@@ -71,7 +63,6 @@ public class NewPredictionScreen
                         "New Prediction"
                 );
 
-
         heading.setFont(
                 javafx.scene.text.Font.font(
                         "Arial",
@@ -80,13 +71,11 @@ public class NewPredictionScreen
                 )
         );
 
-
         heading
                 .getStyleClass()
                 .add(
                         "heading"
                 );
-
 
         // =====================================================
         // Description
@@ -94,9 +83,8 @@ public class NewPredictionScreen
 
         Label description =
                 new Label(
-                        "Choose what you want to predict, select a model, and provide a GitHub pull-request URL."
+                        "Select a model and provide an HTTPS GitHub pull-request URL."
                 );
-
 
         description
                 .getStyleClass()
@@ -104,63 +92,24 @@ public class NewPredictionScreen
                         "muted-text"
                 );
 
-
         description.setWrapText(
                 true
         );
-
 
         // =====================================================
         // Prediction Type
         // =====================================================
 
-        ComboBox<String> predictionType =
-                new ComboBox<>(
-                        FXCollections.observableArrayList(
-//                                "Merge Probability",
-//                                "PR Quality",
-                                "Both"
-                        )
-                );
-
-
-        predictionType
-                .getSelectionModel()
-                .selectFirst();
-
-
-        predictionType.setMaxWidth(
-                Double.MAX_VALUE
-        );
-
-
-        VBox predictionTypeBox =
-                new VBox(
-                        8,
-                        new Label(
-                                "Prediction type"
-                        ),
-                        predictionType
-                );
-
-
-        // =====================================================
-        // Model Selector
-        // =====================================================
-
         ComboBox<ModelItem> modelSelector =
                 new ComboBox<>();
-
 
         modelSelector.setMaxWidth(
                 Double.MAX_VALUE
         );
 
-
         modelSelector.setPromptText(
                 "Loading models..."
         );
-
 
         VBox modelBox =
                 new VBox(
@@ -171,7 +120,6 @@ public class NewPredictionScreen
                         modelSelector
                 );
 
-
         // =====================================================
         // GitHub PR URL
         // =====================================================
@@ -179,18 +127,15 @@ public class NewPredictionScreen
         TextField githubUrlField =
                 new TextField();
 
-
         githubUrlField.setPromptText(
                 "https://github.com/owner/repository/pull/123"
         );
-
 
         githubUrlField
                 .getStyleClass()
                 .add(
                         "login-input"
                 );
-
 
         VBox githubUrlBox =
                 new VBox(
@@ -201,7 +146,6 @@ public class NewPredictionScreen
                         githubUrlField
                 );
 
-
         // =====================================================
         // Status
         // =====================================================
@@ -209,18 +153,15 @@ public class NewPredictionScreen
         Label statusLabel =
                 new Label();
 
-
         statusLabel
                 .getStyleClass()
                 .add(
                         "muted-text"
                 );
 
-
         statusLabel.setWrapText(
                 true
         );
-
 
         // =====================================================
         // Analyze Button
@@ -231,79 +172,32 @@ public class NewPredictionScreen
                         "Analyze Pull Request"
                 );
 
-
         analyzeButton
                 .getStyleClass()
                 .add(
                         "primary-button"
                 );
 
-
         analyzeButton.setMaxWidth(
                 Double.MAX_VALUE
         );
-
 
         analyzeButton.setDisable(
                 true
         );
 
-
         // =====================================================
         // Initial GET /models
         // =====================================================
 
-        loadModels(
-                toApiPredictionType(
-                        predictionType.getValue()
-                ),
-                modelSelector,
-                analyzeButton,
-                statusLabel
-        );
-
-
-        // =====================================================
-        // Prediction Type Changed
-        // =====================================================
-
-        predictionType
-                .valueProperty()
-                .addListener(
-                        (
-                                observable,
-                                oldValue,
-                                newValue
-                        ) -> {
-
-                            String apiType =
-                                    toApiPredictionType(
-                                            newValue
-                                    );
-
-
-                            loadModels(
-                                    apiType,
-                                    modelSelector,
-                                    analyzeButton,
-                                    statusLabel
-                            );
-                        }
-                );
-
-
-        // =====================================================
-        // Analyze Click
-        // =====================================================
+        loadModels(modelSelector, analyzeButton, statusLabel);
 
         analyzeButton.setOnAction(
                 event -> {
 
-
                     clearError(
                             statusLabel
                     );
-
 
                     // =========================================
                     // Get URL
@@ -314,16 +208,12 @@ public class NewPredictionScreen
                                     .getText()
                                     .trim();
 
-
                     // =========================================
                     // Validate URL
                     // =========================================
 
                     boolean validUrl =
-                            url.matches(
-                                    "https?://github\\.com/[^/]+/[^/]+/pull/\\d+/?"
-                            );
-
+                            Predictions.isValidPullRequestUrl(url);
 
                     if (!validUrl) {
 
@@ -335,7 +225,6 @@ public class NewPredictionScreen
                         return;
                     }
 
-
                     // =========================================
                     // Selected Model
                     // =========================================
@@ -343,7 +232,6 @@ public class NewPredictionScreen
                     ModelItem selectedModel =
                             modelSelector
                                     .getValue();
-
 
                     if (selectedModel == null) {
 
@@ -355,34 +243,20 @@ public class NewPredictionScreen
                         return;
                     }
 
-
                     // =========================================
                     // Prediction Type
-                    // =========================================
-
-                    String apiPredictionType =
-                            toApiPredictionType(
-                                    predictionType.getValue()
-                            );
-
-
-                    // =========================================
-                    // Disable Form
                     // =========================================
 
                     setFormDisabled(
                             true,
                             analyzeButton,
                             modelSelector,
-                            predictionType,
                             githubUrlField
                     );
-
 
                     statusLabel.setText(
                             "Analyzing pull request..."
                     );
-
 
                     // =========================================
                     // POST /predict
@@ -396,12 +270,10 @@ public class NewPredictionScreen
 
                                     return predictions.predict(
                                             url,
-                                            apiPredictionType,
                                             selectedModel.getModelId()
                                     );
                                 }
                             };
-
 
                     // =========================================
                     // SUCCESS
@@ -410,25 +282,20 @@ public class NewPredictionScreen
                     predictionTask.setOnSucceeded(
                             workerStateEvent -> {
 
-
                                 setFormDisabled(
                                         false,
                                         analyzeButton,
                                         modelSelector,
-                                        predictionType,
                                         githubUrlField
                                 );
-
 
                                 clearError(
                                         statusLabel
                                 );
 
-
                                 JsonNode result =
                                         predictionTask
                                                 .getValue();
-
 
                                 // Safety check
 
@@ -445,11 +312,9 @@ public class NewPredictionScreen
                                     return;
                                 }
 
-
                                 statusLabel.setText(
                                         "Prediction completed successfully."
                                 );
-
 
                                 // =================================
                                 // Pass COMPLETE API result
@@ -463,7 +328,6 @@ public class NewPredictionScreen
                             }
                     );
 
-
                     // =========================================
                     // FAILED
                     // =========================================
@@ -471,23 +335,18 @@ public class NewPredictionScreen
                     predictionTask.setOnFailed(
                             workerStateEvent -> {
 
-
                                 setFormDisabled(
                                         false,
                                         analyzeButton,
                                         modelSelector,
-                                        predictionType,
                                         githubUrlField
                                 );
-
 
                                 Throwable exception =
                                         predictionTask
                                                 .getException();
 
-
                                 String error;
-
 
                                 if (
                                         exception == null ||
@@ -504,14 +363,12 @@ public class NewPredictionScreen
                                             exception.getMessage();
                                 }
 
-
                                 showError(
                                         statusLabel,
                                         error
                                 );
                             }
                     );
-
 
                     // =========================================
                     // Run Background Task
@@ -522,16 +379,13 @@ public class NewPredictionScreen
                                     predictionTask
                             );
 
-
                     thread.setDaemon(
                             true
                     );
 
-
                     thread.start();
                 }
         );
-
 
         // =====================================================
         // Main Content
@@ -542,23 +396,19 @@ public class NewPredictionScreen
                         18,
                         heading,
                         description,
-                        predictionTypeBox,
                         modelBox,
                         githubUrlBox,
                         analyzeButton,
                         statusLabel
                 );
 
-
         centerContent.setPadding(
                 new Insets(25)
         );
 
-
         centerContent.setMaxWidth(
                 Double.MAX_VALUE
         );
-
 
         centerContent
                 .getStyleClass()
@@ -566,7 +416,6 @@ public class NewPredictionScreen
                         "surface-card",
                         "dashboard-content"
                 );
-
 
         // =====================================================
         // ScrollPane
@@ -577,21 +426,17 @@ public class NewPredictionScreen
                         centerContent
                 );
 
-
         scrollPane.setFitToWidth(
                 true
         );
-
 
         scrollPane.setHbarPolicy(
                 ScrollPane.ScrollBarPolicy.NEVER
         );
 
-
         scrollPane.setVbarPolicy(
                 ScrollPane.ScrollBarPolicy.AS_NEEDED
         );
-
 
         scrollPane
                 .getStyleClass()
@@ -599,52 +444,42 @@ public class NewPredictionScreen
                         "transparent-scroll-pane"
                 );
 
-
         return scrollPane;
     }
-
 
     // =========================================================
     // GET /models
     // =========================================================
 
     private void loadModels(
-            String predictionType,
             ComboBox<ModelItem> modelSelector,
             Button analyzeButton,
             Label statusLabel
     ) {
 
-
         modelSelector.setDisable(
                 true
         );
-
 
         analyzeButton.setDisable(
                 true
         );
 
-
         modelSelector
                 .getItems()
                 .clear();
-
 
         modelSelector.setPromptText(
                 "Loading models..."
         );
 
-
         clearError(
                 statusLabel
         );
 
-
         statusLabel.setText(
                 "Loading available models..."
         );
-
 
         // =====================================================
         // GET /models in background
@@ -656,52 +491,41 @@ public class NewPredictionScreen
                     @Override
                     protected List<ModelItem> call() {
 
-
                         JsonNode response =
-                                predictions.getModels(
-                                        predictionType
-                                );
-
+                                predictions.getModels(null);
 
                         List<ModelItem> models =
                                 new ArrayList<>();
-
 
                         if (
                                 response != null &&
                                         response.isArray()
                         ) {
 
-
                             for (
                                     JsonNode model :
                                     response
                             ) {
-
 
                                 String modelId =
                                         model
                                                 .path("modelId")
                                                 .asText();
 
-
                                 String code =
                                         model
                                                 .path("code")
                                                 .asText();
-
 
                                 String name =
                                         model
                                                 .path("name")
                                                 .asText();
 
-
                                 int creditCost =
                                         model
                                                 .path("creditCost")
                                                 .asInt();
-
 
                                 // Ignore malformed model objects
 
@@ -715,7 +539,6 @@ public class NewPredictionScreen
                                     continue;
                                 }
 
-
                                 models.add(
                                         new ModelItem(
                                                 modelId,
@@ -727,11 +550,9 @@ public class NewPredictionScreen
                             }
                         }
 
-
                         return models;
                     }
                 };
-
 
         // =====================================================
         // Model Loading Success
@@ -740,15 +561,12 @@ public class NewPredictionScreen
         task.setOnSucceeded(
                 event -> {
 
-
                     List<ModelItem> models =
                             task.getValue();
-
 
                     modelSelector.setDisable(
                             false
                     );
-
 
                     modelSelector
                             .getItems()
@@ -756,59 +574,48 @@ public class NewPredictionScreen
                                     models
                             );
 
-
                     if (
                             models == null ||
                                     models.isEmpty()
                     ) {
 
-
                         modelSelector.setPromptText(
                                 "No models available"
                         );
-
 
                         analyzeButton.setDisable(
                                 true
                         );
 
-
                         showError(
                                 statusLabel,
-                                "Your current plan has no available model for this prediction type."
+                                "Your current plan has no available models."
                         );
-
 
                         return;
                     }
-
 
                     modelSelector
                             .getSelectionModel()
                             .selectFirst();
 
-
                     modelSelector.setPromptText(
                             "Select model"
                     );
-
 
                     analyzeButton.setDisable(
                             false
                     );
 
-
                     clearError(
                             statusLabel
                     );
-
 
                     statusLabel.setText(
                             ""
                     );
                 }
         );
-
 
         // =====================================================
         // Model Loading Failed
@@ -817,28 +624,22 @@ public class NewPredictionScreen
         task.setOnFailed(
                 event -> {
 
-
                     modelSelector.setDisable(
                             false
                     );
-
 
                     analyzeButton.setDisable(
                             true
                     );
 
-
                     modelSelector.setPromptText(
                             "Unable to load models"
                     );
 
-
                     Throwable exception =
                             task.getException();
 
-
                     String error;
-
 
                     if (
                             exception == null ||
@@ -855,14 +656,12 @@ public class NewPredictionScreen
                                 exception.getMessage();
                     }
 
-
                     showError(
                             statusLabel,
                             error
                     );
                 }
         );
-
 
         // =====================================================
         // Start Background Task
@@ -873,49 +672,12 @@ public class NewPredictionScreen
                         task
                 );
 
-
         thread.setDaemon(
                 true
         );
 
-
         thread.start();
     }
-
-
-    // =========================================================
-    // UI prediction type -> API prediction type
-    // =========================================================
-
-    private String toApiPredictionType(
-            String value
-    ) {
-
-
-        if (
-                value == null
-        ) {
-
-            return "BOTH";
-        }
-
-
-        return switch (value) {
-
-            case "Merge Probability" ->
-                    "MERGE_PROBABILITY";
-
-            case "PR Quality" ->
-                    "PR_QUALITY";
-
-            case "Both" ->
-                    "BOTH";
-
-            default ->
-                    "BOTH";
-        };
-    }
-
 
     // =========================================================
     // Error Handling
@@ -926,16 +688,13 @@ public class NewPredictionScreen
             String message
     ) {
 
-
         clearError(
                 statusLabel
         );
 
-
         statusLabel.setText(
                 message
         );
-
 
         statusLabel
                 .getStyleClass()
@@ -944,11 +703,9 @@ public class NewPredictionScreen
                 );
     }
 
-
     private void clearError(
             Label statusLabel
     ) {
-
 
         statusLabel
                 .getStyleClass()
@@ -956,7 +713,6 @@ public class NewPredictionScreen
                         "message-error"
                 );
     }
-
 
     // =========================================================
     // Disable / Enable Form
@@ -966,38 +722,27 @@ public class NewPredictionScreen
             boolean disabled,
             Button analyzeButton,
             ComboBox<ModelItem> modelSelector,
-            ComboBox<String> predictionType,
             TextField githubUrlField
     ) {
-
 
         analyzeButton.setDisable(
                 disabled
         );
 
-
         modelSelector.setDisable(
                 disabled
         );
-
-
-        predictionType.setDisable(
-                disabled
-        );
-
 
         githubUrlField.setDisable(
                 disabled
         );
     }
 
-
     // =========================================================
     // UI-only Model Item
     // =========================================================
 
     private static class ModelItem {
-
 
         private final String modelId;
 
@@ -1006,7 +751,6 @@ public class NewPredictionScreen
         private final String name;
 
         private final int creditCost;
-
 
         public ModelItem(
                 String modelId,
@@ -1028,37 +772,30 @@ public class NewPredictionScreen
                     creditCost;
         }
 
-
         public String getModelId() {
 
             return modelId;
         }
-
 
         public String getCode() {
 
             return code;
         }
 
-
         public String getName() {
 
             return name;
         }
-
 
         public int getCreditCost() {
 
             return creditCost;
         }
 
-
         @Override
         public String toString() {
 
-
             String creditText;
-
 
             if (
                     creditCost == 1
@@ -1073,7 +810,6 @@ public class NewPredictionScreen
                         creditCost +
                                 " credits";
             }
-
 
             return name +
                     " • " +

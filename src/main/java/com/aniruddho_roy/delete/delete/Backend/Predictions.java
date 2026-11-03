@@ -16,6 +16,11 @@ public class Predictions extends Base {
         mapper = new ObjectMapper();
     }
 
+    public static boolean isValidPullRequestUrl(String url) {
+        return url != null
+                && url.matches("https://github\\.com/[^/\\s]+/[^/\\s]+/pull/[1-9][0-9]*/?");
+    }
+
 
     // =========================================================
     // GET /models
@@ -72,9 +77,14 @@ public class Predictions extends Base {
 
     public JsonNode predict(
             String pullRequestUrl,
-            String predictionType,
             String modelId
     ) {
+        if (!isValidPullRequestUrl(pullRequestUrl)) {
+            throw new IllegalArgumentException("Enter an HTTPS GitHub pull-request URL.");
+        }
+        if (modelId == null || modelId.isBlank()) {
+            throw new IllegalArgumentException("Please select a prediction model.");
+        }
 
         try {
 
@@ -88,22 +98,7 @@ public class Predictions extends Base {
             );
 
 
-            body.put(
-                    "predictionType",
-                    predictionType
-            );
-
-
-            if (
-                    modelId != null &&
-                            !modelId.isBlank()
-            ) {
-
-                body.put(
-                        "modelId",
-                        modelId
-                );
-            }
+            body.put("modelId", modelId);
 
 
             String jsonBody =

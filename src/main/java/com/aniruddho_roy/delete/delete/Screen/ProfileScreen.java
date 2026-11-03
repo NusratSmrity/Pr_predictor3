@@ -264,7 +264,7 @@ public class ProfileScreen extends DashboardBase {
         thread.start();
     }
 
-    private VBox createCurrentSubscriptionCard(Subscription.CurrentSubscription current) {
+    static VBox createCurrentSubscriptionCard(Subscription.CurrentSubscription current) {
 
         // Left side: plan info
         Label planLabel = new Label("Current subscription: " + current.planName());
@@ -273,7 +273,10 @@ public class ProfileScreen extends DashboardBase {
 
         Label infoLabel = new Label(
                 current.status() + " • Started " + current.startedAt()
+                        + " • " + current.duration() + (current.duration() == 1 ? " day" : " days")
+                        + (current.endedAt().isBlank() ? "" : "\nEnds " + current.endedAt().replace("T", " ") + " UTC")
         );
+        infoLabel.setWrapText(true);
         infoLabel.setFont(Font.font("Arial", 11));
         infoLabel.getStyleClass().add("muted-text");
 
@@ -282,7 +285,7 @@ public class ProfileScreen extends DashboardBase {
 
         // Right side: credits
         Label creditsLabel = new Label(
-                current.creditsUsed() + " / " + current.monthlyCredits()
+                current.creditsUsed() + " / " + current.credits()
                         + " credits used"
         );
         creditsLabel.setFont(Font.font("Arial", 11));
@@ -298,9 +301,9 @@ public class ProfileScreen extends DashboardBase {
         HBox creditsRow = new HBox(6, creditsLabel, spacer, remainingLabel);
 
         ProgressBar creditsBar = new ProgressBar(
-                current.monthlyCredits() == 0
+                current.credits() == 0
                         ? 0
-                        : (double) current.creditsUsed() / current.monthlyCredits()
+                        : Math.min(1.0, (double) current.creditsUsed() / current.credits())
         );
         creditsBar.setMaxWidth(Double.MAX_VALUE);
         creditsBar.setPrefHeight(8);

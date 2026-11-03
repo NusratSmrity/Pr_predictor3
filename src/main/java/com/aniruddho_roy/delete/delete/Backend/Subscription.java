@@ -15,7 +15,8 @@ public class Subscription extends Base {
     public record PlanInfo(
             String code,
             String name,
-            int monthlyCredits,
+            int credits,
+            int duration,
             String description,
             List<String> modelNames
     ) {}
@@ -25,7 +26,9 @@ public class Subscription extends Base {
             String planName,
             String status,
             String startedAt,
-            int monthlyCredits,
+            String endedAt,
+            int credits,
+            int duration,
             int creditsUsed,
             int creditsRemaining
     ) {}
@@ -57,7 +60,7 @@ public class Subscription extends Base {
 
 
     /**
-     * GET /subscription (status, startedAt)
+     * GET /subscription (status, startedAt, endedAt)
      * + GET /active-plan (creditsUsed, creditsRemaining).
      * Returns null if either request fails.
      */
@@ -87,7 +90,9 @@ public class Subscription extends Base {
                     plan.path("name").asText(""),
                     sub.path("status").asText(""),
                     startedAt,
-                    plan.path("monthlyCredits").asInt(0),
+                    sub.path("endedAt").asText(""),
+                    plan.path("credits").asInt(0),
+                    plan.path("duration").asInt(0),
                     plan.path("creditsUsed").asInt(0),
                     plan.path("creditsRemaining").asInt(0)
             );
@@ -133,7 +138,8 @@ public class Subscription extends Base {
         return new PlanInfo(
                 json.path("code").asText(""),
                 json.path("name").asText(""),
-                json.path("monthlyCredits").asInt(0),
+                json.path("credits").asInt(0),
+                json.path("duration").asInt(0),
                 json.path("description").asText(""),
                 modelNames
         );

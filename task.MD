@@ -46,10 +46,10 @@ Files: Screen/HistoryScreen.java and additional/COMPONETS.java.
 
 Files: Backend/Subscription.java, Screen/SubscriptionScreen.java and Screen/ProfileScreen.java.
 
-- [ ] Read credits instead of monthlyCredits and update the small records/accessors and their callers.
-- [ ] Read duration in days and the subscription's endedAt.
-- [ ] Update plan cards and profile usage displays to use the actual credits and plan period.
-- [ ] Replace "credits / month" with "credits per N days" or "credits per plan period".
+- [x] Read credits instead of monthlyCredits and update the small records/accessors and their callers.
+- [x] Read duration in days and the subscription's endedAt.
+- [x] Update plan cards and profile usage displays to use the actual credits and plan period.
+- [x] Replace "credits / month" with "credits per N days" or "credits per plan period".
 
 ## 5. GET /dashboard — plan display
 

@@ -64,6 +64,40 @@ class ApiCompatibilityTest {
         assertTrue(Predictions.isValidPullRequestUrl(URL + "/"));
     }
 
+    @Test
+    void plansAndSubscriptionsReadCreditsDurationAndExpiry() {
+        String plan = """
+                {"code":"FREE","name":"Free","credits":5,"duration":1,
+                 "description":"5 credits per plan period","models":[{"name":"Model 1"}],
+                 "creditsUsed":2,"creditsRemaining":3}
+                """;
+        Subscription api = new Subscription() {
+            @Override
+            protected HttpResponse<String> get_authenticated_request(String path) {
+                return new Response(200, switch (path) {
+                    case "/plans" -> "[" + plan + "]";
+                    case "/active-plan" -> plan;
+                    case "/subscription" -> """
+                            {"status":"ACTIVE","startedAt":"2026-11-03T12:00:00",
+                             "endedAt":"2026-11-04T12:00:00"}
+                            """;
+                    default -> throw new AssertionError("Unexpected endpoint: " + path);
+                });
+            }
+        };
+        var available = api.getPlans().getFirst();
+        assertEquals(5, available.credits());
+        assertEquals(1, available.duration());
+        assertEquals(java.util.List.of("Model 1"), available.modelNames());
+        var current = api.getCurrentSubscription();
+        assertEquals("FREE", current.planCode());
+        assertEquals(5, current.credits());
+        assertEquals(1, current.duration());
+        assertEquals(2, current.creditsUsed());
+        assertEquals(3, current.creditsRemaining());
+        assertEquals("2026-11-04T12:00:00", current.endedAt());
+    }
+
     private record Response(int statusCode, String body) implements HttpResponse<String> {
         public HttpRequest request() { return null; }
         public Optional<HttpResponse<String>> previousResponse() { return Optional.empty(); }

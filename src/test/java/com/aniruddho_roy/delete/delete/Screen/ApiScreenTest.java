@@ -2,6 +2,7 @@ package com.aniruddho_roy.delete.delete.Screen;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.aniruddho_roy.delete.delete.additional.COMPONETS;
+import com.aniruddho_roy.delete.delete.Backend.Subscription.CurrentSubscription;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -94,6 +95,19 @@ class ApiScreenTest {
                 assertTrue(texts(card).containsAll(List.of("https://github.com/owner/repo/pull/12",
                         "FAILED: Service unavailable", "-")));
             }
+        });
+    }
+
+    @Test
+    void profileShowsPlanPeriodAndExpiry() throws Exception {
+        onFxThread(() -> {
+            var current = new CurrentSubscription("FREE", "Free", "ACTIVE", "2026-11-03",
+                    "2026-11-04T12:00:00", 5, 1, 2, 3);
+            String content = String.join("\n", texts(ProfileScreen.createCurrentSubscriptionCard(current)));
+            assertTrue(content.contains("2 / 5 credits used"));
+            assertTrue(content.contains("1 day"));
+            assertTrue(content.contains("Ends 2026-11-04 12:00:00 UTC"));
+            assertFalse(content.contains("month"));
         });
     }
 

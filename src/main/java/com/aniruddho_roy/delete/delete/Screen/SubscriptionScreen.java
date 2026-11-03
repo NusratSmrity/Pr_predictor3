@@ -134,7 +134,8 @@ public class SubscriptionScreen extends DashboardBase {
         descriptionLabel.getStyleClass().add("muted-text");
 
         Label priceLabel = new Label(
-                plan.monthlyCredits() + " credits / month"
+                plan.credits() + " credits per " + plan.duration()
+                        + (plan.duration() == 1 ? " day" : " days")
         );
         priceLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
         priceLabel.getStyleClass().add("stat-value");

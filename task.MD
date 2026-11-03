@@ -55,10 +55,10 @@ Files: Backend/Subscription.java, Screen/SubscriptionScreen.java and Screen/Prof
 
 File: Screen/UserDashboard.java.
 
-- [ ] Read subscription.plan.credits instead of subscription.plan.monthlyCredits.
-- [ ] Use subscription.plan.duration for the plan period.
-- [ ] Replace monthly usage labels with "current plan period".
-- [ ] Keep the existing usage.predictionsUsed, usage.creditsUsed, usage.creditLimit and usage.creditsRemaining reads; these fields still match.
+- [x] Read subscription.plan.credits instead of subscription.plan.monthlyCredits.
+- [x] Use subscription.plan.duration for the plan period.
+- [x] Replace monthly usage labels with "current plan period".
+- [x] Keep the existing usage.predictionsUsed, usage.creditsUsed, usage.creditLimit and usage.creditsRemaining reads; these fields still match.
 
 ## Already compatible
 

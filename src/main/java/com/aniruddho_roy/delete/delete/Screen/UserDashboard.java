@@ -97,7 +97,7 @@ public class UserDashboard extends DashboardBase {
 
         Label description =
                 new Label(
-                        "Monitor your prediction activity, monthly credits and recent analyses."
+                        "Monitor your prediction activity, plan credits and recent analyses."
                 );
 
 
@@ -317,34 +317,6 @@ public class UserDashboard extends DashboardBase {
                 );
 
 
-        JsonNode plan =
-                subscription.path(
-                        "plan"
-                );
-
-
-        String planName =
-                text(
-                        plan,
-                        "name",
-                        "Unknown"
-                );
-
-
-        String planCode =
-                text(
-                        plan,
-                        "code",
-                        ""
-                );
-
-
-        int monthlyCredits =
-                plan
-                        .path("monthlyCredits")
-                        .asInt(0);
-
-
         // =====================================================
         // Overview KPI cards
         // =====================================================
@@ -403,7 +375,7 @@ public class UserDashboard extends DashboardBase {
                         String.valueOf(
                                 creditsUsed
                         ),
-                        "Current month",
+                        "Current plan period",
                         "stat-orange"
                 ),
 
@@ -414,7 +386,7 @@ public class UserDashboard extends DashboardBase {
                         ),
                         "of " +
                                 creditLimit +
-                                " monthly credits",
+                                " credits for the current plan period",
                         "stat-purple"
                 )
         );
@@ -434,15 +406,10 @@ public class UserDashboard extends DashboardBase {
 
 
         VBox planCard =
-                createPlanCard(
-                        planName,
-                        planCode,
-                        monthlyCredits,
-                        subscription
-                );
+                createPlanCard(subscription);
 
 
-// Keep ONLY Monthly Usage and Current Plan a little smaller.
+// Keep ONLY Current Plan Period and Current Plan a little smaller.
 // Do not add them to summaryCards and do not allow HBox to stretch them.
 
         usageCard.setPrefWidth(360);
@@ -600,7 +567,7 @@ public class UserDashboard extends DashboardBase {
 
 
     // =========================================================
-    // Monthly usage
+    // Current plan period
     // =========================================================
 
     private VBox createUsageCard(
@@ -613,7 +580,7 @@ public class UserDashboard extends DashboardBase {
 
         Label title =
                 createSectionHeading(
-                        "Monthly Usage"
+                        "Current Plan Period"
                 );
 
 
@@ -677,7 +644,7 @@ public class UserDashboard extends DashboardBase {
 
         Label predictions =
                 new Label(
-                        "Predictions this month: " +
+                        "Predictions this plan period: " +
                                 predictionsUsed
                 );
 
@@ -716,12 +683,12 @@ public class UserDashboard extends DashboardBase {
     // Subscription plan
     // =========================================================
 
-    private VBox createPlanCard(
-            String planName,
-            String planCode,
-            int monthlyCredits,
-            JsonNode subscription
-    ) {
+    static VBox createPlanCard(JsonNode subscription) {
+        JsonNode plan = subscription.path("plan");
+        String planName = text(plan, "name", "Unknown");
+        String planCode = text(plan, "code", "");
+        int planCredits = plan.path("credits").asInt(0);
+        int duration = plan.path("duration").asInt(0);
 
 
         Label title =
@@ -763,8 +730,7 @@ public class UserDashboard extends DashboardBase {
 
         Label credits =
                 new Label(
-                        monthlyCredits +
-                                " credits per month"
+                        planCredits + " credits per " + duration + (duration == 1 ? " day" : " days")
                 );
 
 
@@ -1376,7 +1342,7 @@ public class UserDashboard extends DashboardBase {
     // Section heading
     // =========================================================
 
-    private Label createSectionHeading(
+    private static Label createSectionHeading(
             String text
     ) {
 
@@ -1409,7 +1375,7 @@ public class UserDashboard extends DashboardBase {
     // JSON helpers
     // =========================================================
 
-    private String text(
+    private static String text(
             JsonNode node,
             String field,
             String defaultValue

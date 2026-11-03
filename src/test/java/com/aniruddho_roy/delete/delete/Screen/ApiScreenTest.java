@@ -111,6 +111,20 @@ class ApiScreenTest {
         });
     }
 
+    @Test
+    void dashboardShowsCreditsForTheActualPlanDuration() throws Exception {
+        onFxThread(() -> {
+            for (int duration : new int[]{1, 30}) {
+                var subscription = new ObjectMapper().readTree(
+                        "{\"status\":\"ACTIVE\",\"plan\":{\"name\":\"Plan\",\"code\":\"PLAN\","
+                        + "\"credits\":5,\"duration\":" + duration + "}}");
+                String content = String.join("\n", texts(UserDashboard.createPlanCard(subscription)));
+                assertTrue(content.contains("5 credits per " + duration + (duration == 1 ? " day" : " days")));
+                assertFalse(content.contains("month"));
+            }
+        });
+    }
+
     private static List<String> texts(Node node) {
         List<String> result = new ArrayList<>();
         if (node instanceof Labeled labeled) result.add(labeled.getText());
